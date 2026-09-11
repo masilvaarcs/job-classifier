@@ -8,7 +8,7 @@ $lnk = $shell.CreateShortcut($LnkPath)
 $lnk.TargetPath       = 'powershell.exe'
 $lnk.Arguments        = "-NoProfile -ExecutionPolicy Bypass -WindowStyle Normal -File `"$Target`""
 $lnk.WorkingDirectory = 'C:\__DEV__\__Projetos_2026\__FILTRA_VAGAS_2026\job-classifier'
-$lnk.Description       = 'Job Classifier: inicia API (8000), Python (8001) e Frontend (5173) e abre no navegador'
+$lnk.Description       = 'Job Classifier: inicia tudo (Atlas + .NET 8000/8003 + Python 8001/8002 + Frontend 5173) e abre o navegador'
 $lnk.IconLocation      = 'C:\Windows\System32\shell32.dll,221'
 $lnk.Save()
 
