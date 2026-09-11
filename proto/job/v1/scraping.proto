@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package job.v1;
+
+import "job/v1/vagas.proto";
+
+// ============================================================
+// Job Classifier — contrato do microserviço de scraping
+// Servido pelo Python (grpcio, porta 8002) e consumido pelo
+// serviço Node via gRPC nativo (createGrpcTransport).
+// ============================================================
+
+message ScrapingServiceStartScrapingRequest {
+  string plataforma = 1; // vazio = todas as plataformas
+}
+
+message ScrapingServiceStartScrapingResponse {
+  bool iniciado = 1;
+  string mensagem = 2;
+  repeated string plataformas = 3;
+}
+
+message ScrapingServiceGetStatusRequest {}
+
+message ScrapingServiceGetStatusResponse {
+  repeated PlataformaStatus plataformas = 1;
+}
+
+service ScrapingService {
+  rpc StartScraping(ScrapingServiceStartScrapingRequest) returns (ScrapingServiceStartScrapingResponse);
+  rpc GetStatus(ScrapingServiceGetStatusRequest) returns (ScrapingServiceGetStatusResponse);
+}

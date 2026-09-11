@@ -1,0 +1,46 @@
+# =====================================================================
+#  Job Classifier - workspace raiz
+#  Cada servico (job-classifier-*) é um repositorio proprio com remote;
+#  aqui versionamos: contratos proto, docs, scripts de orquestracao e _archive.
+# =====================================================================
+
+# --- SEGREDOS (nunca versionar) ---
+MongoDB_Chaves/
+.env
+**/.env
+.env.*
+*.local
+.local-mongo-uri
+**/.local-mongo-uri
+
+# --- Repositorios filhos (remotes proprios em github.com/masilvaarcs) ---
+/job-classifier-api/
+/job-classifier-react/
+/job-classifier-python/
+/job-classifier-dotnet/
+/job-classifier-tools/
+
+# --- Dependencias e artefatos ---
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+*.tsbuildinfo
+**/tsconfig.tsbuildinfo
+*.log
+**/*.log
+
+# --- Python (referencias futuras na raiz) ---
+__pycache__/
+**/__pycache__/
+.venv/
+venv/
+
+# --- IDE / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Freebuff client ---
+.freebuff/

@@ -1,0 +1,72 @@
+%%{init: {
+  "theme": "default",
+  "themeVariables": {
+    "fontFamily": "Segoe UI, sans-serif",
+    "fontSize": "14px"
+  },
+  "flowchart": { "nodeSpacing": 40, "rankSpacing": 55, "curve": "basis" }
+}}%%
+flowchart TB
+    USUARIO([Usuário])
+
+    subgraph BROWSER["🌐 Navegador — localhost:5173"]
+        UI["React 19 + Vite<br/>job-classifier-react<br/><i>transporte gRPC-Web</i>"]
+    end
+
+    subgraph DOTNET["⚙️ job-classifier-dotnet — :8000 (PRIMÁRIO)"]
+        VAGA["job.v1.VagaService<br/>11 RPCs · gRPC + gRPC-Web<br/>/healthz"]
+        SCORE["ScoreService<br/>backend 40 · frontend 20<br/>DB 15 · python 10"]
+    end
+
+    subgraph PY["🐍 job-classifier-python"]
+        direction TB
+        GRPC["job.v1.ScrapingService<br/>grpcio — :8002 (HTTP/2)"]
+        FAST["FastAPI — :8001<br/>Swagger · classificar · /exportar"]
+        SCR["Scrapers<br/>LinkedIn · Indeed · Glassdoor<br/>Jooble · BNE"]
+    end
+
+    subgraph DATA["🗄️ Dados"]
+        MONGO[("MongoDB<br/>db job_tracker · coleção vagas<br/>índices únicos link + id")]
+        PG[("PostgreSQL 16<br/>job_tracker.job_vagas<br/>fonte legada")]
+    end
+
+    subgraph TOOLS["🛠️ job-classifier-tools (one-off)"]
+        MIG["npm run migrate<br/>PG → Mongo · upsert por link"]
+        DM["npm run dev:mongo<br/>mongod efêmero :57010"]
+    end
+
+    LEGADO["📦 legado fora do fluxo<br/>job-classifier-api (REST/PG)<br/>_archive/job-classifier-rpc (Node RPC)"]
+
+    %% ---- Leitura e escrita do dashboard ----
+    USUARIO -->|interage| UI
+    UI ==>|"gRPC-Web · proxy Vite /dotnet"| VAGA
+    UI -->|"HTTP /exportar/{plataforma}"| FAST
+
+    VAGA -->|"consulta e grava"| MONGO
+    SCORE -.->|usado por| VAGA
+
+    %% ---- Scraping ----
+    VAGA ==>|"gRPC nativo · deadline 10s"| GRPC
+    GRPC ==>|"StartScraping → threads"| SCR
+    SCR -->|coletam páginas| PLAT["🌍 Plataformas<br/>LinkedIn · Indeed · Glassdoor · Jooble · BNE"]
+    GRPC -->|mantém status em memória| GRPC
+
+    %% ---- Migração (one-off) ----
+    MIG -->|"SELECT job_vagas"| PG
+    MIG ==>|"upsert 4.109 docs"| MONGO
+    DM -.->|fornece URI| MONGO
+
+    %% ---- Legado ----
+    PG -.->|era fonte da API REST| LEGADO
+
+    %% ---- Estilos ----
+    style USUARIO fill:#f9f,stroke:#333
+    style DOTNET fill:#e8f4fd,stroke:#2b6cb0,stroke-width:2px
+    style VAGA fill:#d6eaf8,stroke:#2b6cb0,stroke-width:2px
+    style PY fill:#fdf2e0,stroke:#b7791f
+    style GRPC fill:#fdebd0,stroke:#b7791f
+    style DATA fill:#eafaf0,stroke:#27864b
+    style MONGO fill:#d5f5e3,stroke:#27864b,stroke-width:2px
+    style PG fill:#f2f3f4,stroke:#7f8c8d,stroke-dasharray: 5 5
+    style LEGADO fill:#f2f3f4,stroke:#7f8c8d,stroke-dasharray: 5 5
+    style TOOLS fill:#f4ecf7,stroke:#7d3c98

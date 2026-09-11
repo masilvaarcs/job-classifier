@@ -1,0 +1,15 @@
+{
+  "name": "job-classifier",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Job Classifier — workspace raiz (contratos proto + codegen Buf)",
+  "scripts": {
+    "proto:lint": "buf lint",
+    "proto:generate": "buf generate",
+    "proto:all": "buf lint && buf generate"
+  },
+  "devDependencies": {
+    "@bufbuild/buf": "^1.72.0",
+    "@bufbuild/protoc-gen-es": "^2.2.0"
+  }
+}

@@ -1,0 +1,225 @@
+syntax = "proto3";
+
+package job.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// ============================================================
+// Job Classifier — contratos v1
+// Serviço de vagas (ConnectRPC/gRPC no Node, porta 8000)
+// ============================================================
+
+// ---------- Entidades ----------
+
+message Vaga {
+  int64 id = 1;
+  string titulo = 2;
+  string empresa = 3;
+  string localizacao = 4;
+  string salario = 5;
+  string modalidade = 6;
+  string publicado = 7;
+  optional google.protobuf.Timestamp data_publicacao = 8;
+  // Valor exatamente igual ao armazenado no banco:
+  // REMOTO | HIBRIDO | PRESENCIAL | NAO IDENTIFICADO
+  string tipo_trabalho = 9;
+  string descricao = 10;
+  string link = 11;
+  string job_id = 12;
+  string plataforma = 13;
+  optional google.protobuf.Timestamp data_coleta = 14;
+  optional google.protobuf.Timestamp created_at = 15;
+  optional google.protobuf.Timestamp updated_at = 16;
+  // pendente | candidatado | entrevista | rejeitado | contratado
+  string status_usuario = 17;
+  bool ignorada = 18;
+  bool pra_mim = 19;
+  int32 score_compatibilidade = 20;
+  optional google.protobuf.Timestamp data_verificacao = 21;
+  bool ativa = 22;
+  string notas = 23;
+}
+
+message Filtros {
+  // 0 = sem filtro de período
+  optional int32 dias = 1;
+  string plataforma = 2; // vazio ou "Todas" = todas
+  string tipo = 3;       // vazio ou "Todos" = todos
+  string status = 4;     // vazio ou "Todos" = todos
+  string busca = 5;
+  bool ignoradas = 6;
+  bool apenas_pra_mim = 7;
+  int32 page = 8;
+  int32 per_page = 9;
+}
+
+message Paginacao {
+  int32 page = 1;
+  int32 per_page = 2;
+  int32 total_pages = 3;
+  int64 total = 4;
+}
+
+message Stats {
+  int64 total_vagas = 1;
+  int32 total_plataformas = 2;
+  map<string, int64> vagas_por_plataforma = 3;
+  map<string, int64> vagas_por_tipo = 4;
+  map<string, int64> vagas_por_status = 5;
+  string ultima_coleta = 6;
+}
+
+message Plataforma {
+  string nome = 1;
+  int64 total = 2;
+  string ultima_coleta = 3;
+}
+
+// ---------- ListVagas ----------
+
+message ListVagasRequest {
+  Filtros filtros = 1;
+}
+
+message ListVagasResponse {
+  repeated Vaga vagas = 1;
+  Paginacao paginacao = 2;
+}
+
+// ---------- Mutations ----------
+
+message UpdateVagaRequest {
+  int64 id = 1;
+  // Somente os campos presentes são atualizados
+  optional string status_usuario = 2;
+  optional string notas = 3;
+  optional bool ignorada = 4;
+  optional bool pra_mim = 5;
+}
+
+message UpdateVagaResponse {
+  Vaga vaga = 1;
+}
+
+message IgnorarVagaRequest {
+  int64 id = 1;
+}
+
+message IgnorarVagaResponse {
+  Vaga vaga = 1;
+}
+
+message RestaurarVagaRequest {
+  int64 id = 1;
+}
+
+message RestaurarVagaResponse {
+  Vaga vaga = 1;
+}
+
+message ToggleFavoritarRequest {
+  int64 id = 1;
+}
+
+message ToggleFavoritarResponse {
+  Vaga vaga = 1;
+}
+
+message RecalcularScoresRequest {}
+
+message RecalcularScoresResponse {
+  int32 vagas_atualizadas = 1;
+}
+
+// ---------- Stats / Plataformas ----------
+
+message GetStatsRequest {}
+
+message GetStatsResponse {
+  Stats stats = 1;
+}
+
+message ListPlataformasRequest {}
+
+message ListPlataformasResponse {
+  repeated Plataforma plataformas = 1;
+}
+
+// ---------- Scraping ----------
+
+message StartScrapingRequest {
+  string plataforma = 1; // vazio = todas as plataformas
+}
+
+message StartScrapingResponse {
+  bool iniciado = 1;
+  string mensagem = 2;
+  repeated string plataformas = 3;
+}
+
+message GetScrapingStatusRequest {}
+
+message PlataformaStatus {
+  string plataforma = 1;
+  string status = 2;      // em_andamento | concluido | erro
+  string inicio = 3;
+  string fim = 4;
+  int32 vagas_encontradas = 5;
+  string erro = 6;
+}
+
+message GetScrapingStatusResponse {
+  repeated PlataformaStatus plataformas = 1;
+}
+
+// ---------- Importação (a partir do microserviço Python) ----------
+
+message VagaImportada {
+  string titulo = 1;
+  string empresa = 2;
+  string localizacao = 3;
+  string salario = 4;
+  string modalidade = 5;
+  string publicado = 6;
+  string data_publicacao = 7; // ISO string, vazio = null
+  string tipo_trabalho = 8;
+  string descricao = 9;
+  string link = 10;
+  string job_id = 11;
+  string plataforma = 12;
+}
+
+message ImportVagasRequest {
+  repeated VagaImportada vagas = 1;
+}
+
+message ImportVagasResponse {
+  int32 importadas = 1;
+  int32 atualizadas = 2;
+}
+
+// ============================================================
+// Serviço principal — consumido pelo frontend (ConnectRPC)
+// e pelo microserviço Python (gRPC)
+// ============================================================
+
+service VagaService {
+  // Vagas
+  rpc ListVagas(ListVagasRequest) returns (ListVagasResponse);
+  rpc UpdateVaga(UpdateVagaRequest) returns (UpdateVagaResponse);
+  rpc IgnorarVaga(IgnorarVagaRequest) returns (IgnorarVagaResponse);
+  rpc RestaurarVaga(RestaurarVagaRequest) returns (RestaurarVagaResponse);
+  rpc ToggleFavoritar(ToggleFavoritarRequest) returns (ToggleFavoritarResponse);
+  rpc RecalcularScores(RecalcularScoresRequest) returns (RecalcularScoresResponse);
+
+  // Stats e plataformas
+  rpc GetStats(GetStatsRequest) returns (GetStatsResponse);
+  rpc ListPlataformas(ListPlataformasRequest) returns (ListPlataformasResponse);
+
+  // Scraping (dispara no microserviço Python via gRPC)
+  rpc StartScraping(StartScrapingRequest) returns (StartScrapingResponse);
+  rpc GetScrapingStatus(GetScrapingStatusRequest) returns (GetScrapingStatusResponse);
+
+  // Importação de dados
+  rpc ImportVagas(ImportVagasRequest) returns (ImportVagasResponse);
+}

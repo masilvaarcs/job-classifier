@@ -1,0 +1,30 @@
+{
+  "name": "job-classifier-rpc",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Job Classifier — Serviço RPC (ConnectRPC) | substitui a API REST",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "migrate": "tsx src/scripts/migrate-pg-to-mongo.ts",
+    "dev:mongo": "tsx src/scripts/dev-mongo.ts"
+  },
+  "dependencies": {
+    "@bufbuild/protobuf": "^2.2.0",
+    "@connectrpc/connect": "^2.0.0",
+    "@connectrpc/connect-node": "^2.0.0",
+    "dotenv": "^16.4.0",
+    "mongodb": "^7.6.0"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^10.1.4",
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.23.1",
+    "pg": "^8.23.0",
+    "tsx": "^4.19.0",
+    "typescript": "~5.6.0"
+  }
+}
