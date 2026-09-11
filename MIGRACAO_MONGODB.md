@@ -3,11 +3,17 @@
 > Guia operacional da migração de dados e da configuração do Atlas.
 > O documento técnico da arquitetura está em [MIGRACAO_GRPC.md](MIGRACAO_GRPC.md).
 
-> ✅ **Status (2026-09-11)**: a migração já foi **testada de ponta a ponta** com um
-> MongoDB local (`npm run dev:mongo`, porta 57010) — as **4.109 vagas** foram migradas
-> com todos os índices e o dashboard consumiu os dados via gRPC/Connect.
-> O que falta é **só o Atlas**: criar projeto + cluster M0 na UI e preencher a
-> `MONGODB_URI` no `job-classifier-rpc\.env` (passo 1 abaixo).
+> ✅ **CONCLUÍDA (2026-09-11)**: migração para o **Atlas em produção** executada e validada —
+> **4.109 vagas** na coleção `vagas` (db `job_tracker`), 8 índices, contagens por plataforma
+> idênticas ao PostgreSQL, e o serviço .NET (8000) servindo do Atlas via gRPC-Web validado
+> ponta a ponta. Cluster: `job-classifier` (M0 FREE, MongoDB 8.0.32, AWS São Paulo).
+> Connection string vive apenas nos `.env` gitignored (`job-classifier-dotnet`, `job-classifier-tools`).
+> Antes disso, a migração já havia sido testada de ponta a ponta com MongoDB local efêmero.
+>
+> ⚠️ Nota técnica (Windows + DNS doméstico): o formato `mongodb+srv://` pode falhar com
+> `querySrv ECONNREFUSED` quando o DNS local recusa consultas SRV. A URI em uso usa o formato
+> `mongodb://` com os 3 seeds do replica set + `replicaSet=atlas-...-shard-0&tls=true` —
+> sem dependência de SRV.
 
 ---
 
