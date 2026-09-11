@@ -14,7 +14,7 @@ O projeto é composto por **4 serviços** (mais o MongoDB):
 
 | Serviço | Pasta | Tecnologia | Porta |
 |---|---|---|---|
-| **Serviço RPC (.NET, primário)** | `job-classifier-dotnet` | ASP.NET Core + Grpc.AspNetCore | **8000** |
+| **Serviço RPC (.NET, primário)** | `job-classifier-dotnet` | ASP.NET Core + Grpc.AspNetCore | **8000** (gRPC-Web) + **8003** (gRPC nativo h2c) |
 | **Microserviço Python (HTTP)** | `job-classifier-python` | Python + FastAPI (Swagger/Excel) | **8001** |
 | **Microserviço Python (gRPC)** | `job-classifier-python` | Python + grpcio (ScrapingService) | **8002** |
 | **Frontend** | `job-classifier-react` | React 19 + Vite + TypeScript | **5173** |
@@ -27,7 +27,7 @@ O projeto é composto por **4 serviços** (mais o MongoDB):
 **URLs quando tudo estiver no ar:**
 
 - Frontend: http://localhost:5173
-- Serviço RPC .NET: http://localhost:8000 (gRPC + gRPC-Web, contratos `job.v1`)
+- Serviço RPC .NET: http://localhost:8000 (gRPC-Web + `/healthz`) e **gRPC nativo na 8003** (h2c — ex.: `grpcurl -plaintext localhost:8003 job.v1.VagaService/GetStats`)
 - Python HTTP (docs Swagger): http://localhost:8001/docs
 - Python gRPC: porta 8002 (serviço `job.v1.ScrapingService`)
 

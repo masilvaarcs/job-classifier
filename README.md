@@ -73,11 +73,17 @@ flowchart LR
 
 | Porta | Serviço | Verificação |
 |---|---|---|
-| **8000** | .NET gRPC + gRPC-Web (primário) | `GET http://localhost:8000/healthz` |
+| **8000** | .NET — gRPC-Web + `/healthz` (HTTP/1.1, caminho do navegador) | `GET http://localhost:8000/healthz` |
+| **8003** | .NET — **gRPC nativo** (h2c/HTTP/2, para grpcurl e backends) | `grpcurl -plaintext localhost:8003 job.v1.VagaService/GetStats` |
 | **8001** | Python FastAPI (Swagger/Excel) | `GET http://localhost:8001/health` |
 | **8002** | Python gRPC (`ScrapingService`) | via cliente gRPC |
 | **5173** | Frontend (Vite) | abrir no navegador |
-| **57010** | MongoDB local dev (fallback) | launcher sobe se não houver Atlas |
+| **57010** | MongoDB local dev (fallback sem Atlas) | launcher sobe automaticamente |
+
+> **Por que 8000 e 8003 separados?** gRPC exige HTTP/2; browsers só negociam HTTP/2 com TLS (ALPN).
+> Por isso o navegador usa **gRPC-Web sobre HTTP/1.1** (porta 8000) e o gRPC nativo fica na 8003
+> (h2c — HTTP/2 em texto claro, sem certificado local). Decisão completa e racional em
+> [job-classifier-dotnet/README.md → "Decisão de protocolos"](job-classifier-dotnet/README.md).
 
 ---
 
@@ -119,6 +125,7 @@ Idempotente: rodar de novo não duplica nada. Para encerrar tudo: `stop-job-clas
 | Documento | Conteúdo |
 |---|---|
 | [ARQUITETURA.md](ARQUITETURA.md) | Arquitetura atual, fluxos de dados, responsabilidades por serviço |
+| [job-classifier-dotnet/README.md](job-classifier-dotnet/README.md) | Decisão de protocolos (HTTP/1.1 vs h2c, TLS/ALPN) e detalhes do serviço primário |
 | [COMO_SUBIR_O_PROJETO.md](COMO_SUBIR_O_PROJETO.md) | Operação manual completa, serviço por serviço |
 | [MIGRACAO_GRPC.md](MIGRACAO_GRPC.md) | Migração REST → gRPC/ConnectRPC → .NET primário (decisões e contratos) |
 | [MIGRACAO_MONGODB.md](MIGRACAO_MONGODB.md) | Migração PostgreSQL → MongoDB Atlas (procedimento e status) |
