@@ -8,7 +8,7 @@
 $ErrorActionPreference = 'Stop'
 
 # ------------------- Caminhos -------------------
-$Root    = 'C:\__DEV__\__Projetos_2026\__FILTRA_VAGAS_2026\job-classifier'
+$Root    = 'C:\__DEV__\__Projetos_2026\classificador-vaga'
 $DotnetDir = Join-Path $Root 'job-classifier-dotnet'
 $PyDir   = Join-Path $Root 'job-classifier-python'
 $WebDir  = Join-Path $Root 'job-classifier-react'

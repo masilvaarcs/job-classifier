@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$Root = 'C:\__DEV__\__Projetos_2026\__FILTRA_VAGAS_2026\job-classifier'
+$Root = 'C:\__DEV__\__Projetos_2026\classificador-vaga'
 Set-Location "$Root\job-classifier-dotnet"
 
 # Resolve MONGODB_URI se o launcher nao tiver passado: .env do dotnet > mongo local
