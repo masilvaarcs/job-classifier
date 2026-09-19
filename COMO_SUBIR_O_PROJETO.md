@@ -49,7 +49,7 @@ python --version  # esperado: 3.11+
 > 💡 Os comandos abaixo assumem que você está na raiz do projeto:
 >
 > ```powershell
-> cd C:\__DEV__\__Projetos_2026\__FILTRA_VAGAS_2026\job-classifier
+> cd C:\__DEV__\__Projetos_2026\classificador-vaga
 > ```
 
 ---
@@ -58,28 +58,50 @@ python --version  # esperado: 3.11+
 
 O banco é **cloud** (Atlas M0 gratuito) — não precisa subir nada local.
 
-**Configuração (primeira vez):** veja o passo a passo completo em
-[MIGRACAO_MONGODB.md](MIGRACAO_MONGODB.md) (projeto → cluster → usuário → IP).
+### 🔑 Credenciais já criadas
 
-A conexão é configurada no `.env` do serviço RPC:
+| Item | Valor |
+|---|---|
+| **Database User** | `jobclass_app` |
+| **Password** | `<SUA_SENHA>` |
+| **Connection String Template** | `mongodb+srv://jobclass_app:<SUA_SENHA>@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority` |
 
-```
-MONGODB_URI=mongodb+srv://usuario:senha@job-classifier.xxxxx.mongodb.net/?retryWrites=true&w=majority
+> ⚠️ **Substitua `cluster0.xxxxx.mongodb.net`** pelo **hostname real do seu cluster** (veja passo a passo abaixo).
+
+### Passo a passo para configurar Atlas (5 min)
+
+1. Acesse **https://cloud.mongodb.com** → login
+2. **Build a Database** → **M0 FREE** → AWS → **sa-east-1 (São Paulo)**
+3. Cluster Name: `job-classifier` → **Create** (aguarda ~3 min)
+4. **Security → Database Access** → **Add New Database User**
+   - Username: `jobclass_app` | Password: `<SUA_SENHA>`
+   - Role: `Atlas admin` → **Add User**
+5. **Security → Network Access** → **Add IP Address**
+   - **Allow Access from Anywhere** (`0.0.0.0/0`) → **Confirm**
+6. **Clusters → Connect** → **Drivers** → **C# / .NET** → **Copy**
+7. **Cole no `.env`** (hostname real: `SEU_CLUSTER.mongodb.net`):
+
+```env
+# job-classifier-dotnet/.env
+MONGODB_URI=mongodb+srv://jobclass_app:<SUA_SENHA>@SEU_CLUSTER.mongodb.net/?retryWrites=true&w=majority&appName=job-classifier
 MONGODB_DB=job_tracker
 ```
+
+> 💡 O hostname real aparece no Connect dialog, ex: `cluster0.abc12.mongodb.net`
+> O `xxxxx` no template é **placeholder** — substitua pelo valor real.
+
+### API Key do Atlas (para automação futura)
+- **Public Key**: `<PUBLIC_KEY>`
+- **Private Key**: `<PRIVATE_KEY>`
+- *Usada apenas para Atlas Admin API (criar clusters, users via script), NÃO para conexão de banco.*
+
+---
 
 > 💡 **Sem Atlas ainda?** Não é bloqueio: o **atalho da área de trabalho** detecta
 > a ausência da `MONGODB_URI` e sobe automaticamente um **MongoDB local de
 > desenvolvimento** (porta 57010, dados efêmeros). Para repovoá-lo, rode
-> `npm run migrate` em `job-classifier-rpc` (veja [MIGRACAO_MONGODB.md](MIGRACAO_MONGODB.md),
+> `npm run migrate` em `job-classifier-tools` (veja [MIGRACAO_MONGODB.md](MIGRACAO_MONGODB.md),
 > seção 3.1). Ao configurar o Atlas, basta preencher a URI no `.env` — nada mais muda.
-
-**Migração de dados (primeira vez):**
-
-```powershell
-cd job-classifier-rpc
-npm run migrate
-```
 
 ---
 
@@ -89,7 +111,7 @@ Os contratos gRPC vivem em `proto/job/v1/`. O código TypeScript/Python é
 gerado a partir deles — rode na raiz (o launcher faz isso automaticamente):
 
 ```powershell
-cd C:\__DEV__\__Projetos_2026\__FILTRA_VAGAS_2026\job-classifier
+cd C:\__DEV__\__Projetos_2026\classificador-vaga
 npm install        # primeira vez apenas
 npm run proto:all  # buf lint + buf generate (TS)
 ```
@@ -109,7 +131,7 @@ cd job-classifier-python
 Abra um **terminal**:
 
 ```powershell
-cd C:\__DEV__\__Projetos_2026\__FILTRA_VAGAS_2026\job-classifier\job-classifier-dotnet
+cd C:\__DEV__\__Projetos_2026\classificador-vaga\job-classifier-dotnet
 ```
 
 **Primeira vez apenas** — compilar:
@@ -265,7 +287,7 @@ Stop-Process -Id (Get-NetTCPConnection -LocalPort 8000 -State Listen).OwningProc
 
 | Sintoma | Causa provável | Solução |
 |---|---|---|
-| RPC não sobe: "MONGODB_URI não configurada" | `.env` ausente ou vazio em `job-classifier-rpc` | Copie `.env.example` → `.env` e preencha `MONGODB_URI` |
+| RPC não sobe: "MONGODB_URI não configurada" | `.env` ausente ou vazio em `job-classifier-dotnet` | Copie `.env.example` → `.env` e preencha `MONGODB_URI` |
 | RPC sobe mas listagem falha (timeout Atlas) | IP não liberado no Network Access ou cluster pausado | Libere o IP / verifique o cluster no Atlas |
 | Frontend carrega mas sem dados | Serviço RPC fora do ar na porta 8000 | Suba o RPC e recarregue a página |
 | Scraping dispara erro "scraping indisponível" | Python gRPC (8002) parado | Suba `.\venv\Scripts\python.exe -m src.grpc_server` |
